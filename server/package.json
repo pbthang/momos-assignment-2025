@@ -1,0 +1,26 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "tsc && node dist/server.js",
+        "dev": "npx nodemon src/server.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
+    "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@types/node": "^25.0.3",
+        "nodemon": "^3.1.11",
+        "typescript": "^5.9.3",
+        "ts-node": "^10.9.1"
+    },
+    "dependencies": {
+        "@notionhq/client": "^0.4.9",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1"
+    }
+}
