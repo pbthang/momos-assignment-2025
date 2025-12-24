@@ -1,27 +1,36 @@
 import { flexRender, type Header } from "@tanstack/react-table";
-import type { DataRecord } from "./columns";
 import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { CSSProperties } from "react";
 import { TableHead } from "../ui/table";
 import { Button } from "../ui/button";
 import { GripVertical } from "lucide-react";
 import { ColumnResizer } from "./column-resizer";
 
-const DraggableTableHeader = ({
+const DraggableTableHeader = <TValue,>({
     header,
 }: {
-    header: Header<DataRecord, unknown>;
+    header: Header<TValue, unknown>;
 }) => {
-    const { attributes, listeners, setNodeRef } = useSortable({
-        id: header.column.id,
-    });
+    const { attributes, isDragging, listeners, setNodeRef, transform } =
+        useSortable({
+            id: header.column.id,
+        });
+
+    const style: CSSProperties = {
+        opacity: isDragging ? 0.6 : 1,
+        position: "relative",
+        transform: CSS.Translate.toString(transform), // translate instead of transform to avoid squishing
+        whiteSpace: "nowrap",
+        width: header.getSize(),
+        zIndex: isDragging ? 1 : 0,
+    };
 
     return (
         <TableHead
             colSpan={header.colSpan}
             ref={setNodeRef}
-            style={{
-                width: header.getSize(),
-            }}
+            style={style}
             className={"relative"}
         >
             <div className="flex items-center justify-between">

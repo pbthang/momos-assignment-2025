@@ -1,13 +1,16 @@
-import type { DataRecord } from "./columns";
 import type { Column } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
-const SortableHeader: React.FC<{
-    column: Column<DataRecord, unknown>;
+const SortableHeader = <TValue,>({
+    column,
+    title,
+    sortingDisabled,
+}: {
+    column: Column<TValue, unknown>;
     title: string;
     sortingDisabled?: boolean;
-}> = ({ column, title, sortingDisabled }) => {
+}) => {
     return (
         <Button
             variant={"ghost"}

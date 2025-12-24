@@ -34,14 +34,14 @@ import {
 } from "@dnd-kit/core";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import DraggableTableHeader from "./draggable-table-header";
-import type { DataRecord } from "./columns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export function DataTable({
+export function DataTable<TValue>({
     columns,
     data,
 }: {
-    columns: ColumnDef<DataRecord>[];
-    data: DataRecord[];
+    columns: ColumnDef<TValue>[];
+    data: TValue[];
 }) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnOrder, setColumnOrder] = useState<string[]>(() =>
@@ -60,14 +60,19 @@ export function DataTable({
         enableColumnResizing: true,
         columnResizeMode: "onChange",
         onColumnSizingChange: setColSizing,
+        defaultColumn: {
+            size: 150,
+            // minSize: 50,
+            // maxSize: 300,
+        },
         state: {
             sorting,
             columnOrder,
             columnSizing: colSizing,
         },
-        debugTable: true,
-        debugHeaders: true,
-        debugColumns: true,
+        // debugTable: true,
+        // debugHeaders: true,
+        // debugColumns: true,
     });
 
     const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -103,6 +108,30 @@ export function DataTable({
                     onClick={() => table.resetColumnOrder()}
                 >
                     Reset Column Order
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => table.resetColumnSizing()}
+                >
+                    Reset Column Sizing
+                </Button>
+            </div>
+            <div className="flex items-center space-x-2 py-4">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                >
+                    <ChevronLeft /> <span>Previous</span>
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                >
+                    <span>Next</span> <ChevronRight />
                 </Button>
             </div>
             <div className="overflow-hidden border">
@@ -170,24 +199,6 @@ export function DataTable({
                         )}
                     </TableBody>
                 </Table>
-            </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Next
-                </Button>
             </div>
         </DndContext>
     );

@@ -9,6 +9,7 @@ type SelectOption = {
 };
 
 export type DataRecord = {
+    id: string;
     title: string;
     checkbox: boolean;
     date: Date;
@@ -27,7 +28,7 @@ export const columns: ColumnDef<DataRecord>[] = [
         header: ({ column }) => (
             <SortableHeader column={column} title="Title" />
         ),
-        cell: ({ row }) => <span>{row.original.title}</span>,
+        cell: ({ row }) => <span>{row.original.title.slice(0, 10)}</span>,
     },
     {
         accessorKey: "checkbox",

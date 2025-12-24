@@ -3,6 +3,7 @@ import axios from "axios";
 import { DataTable } from "./components/data-table/data-table";
 import { columns, type DataRecord } from "./components/data-table/columns";
 import type { NotionQueryResponse } from "./types/api-types";
+import { useMemo } from "react";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
@@ -16,8 +17,10 @@ export function App() {
         },
     });
 
-    const tableData: DataRecord[] =
-        data?.results?.map(transformDTOToDataRecord) || [];
+    const tableData: DataRecord[] = useMemo(
+        () => (data ? data.results.map(transformDTOToDataRecord) : []),
+        [data]
+    );
 
     return (
         <main className="bg-background container px-4 py-4">
@@ -127,6 +130,7 @@ const transformDTOToDataRecord = (
     };
 
     return {
+        id: item.id,
         title: getTitle(),
         checkbox: getCheckbox(),
         date: getDate(),

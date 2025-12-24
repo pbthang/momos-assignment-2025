@@ -1,10 +1,9 @@
 import type { Header } from "@tanstack/react-table";
-import type { DataRecord } from "./columns";
 
-export const ColumnResizer = ({
+export const ColumnResizer = <TValue,>({
     header,
 }: {
-    header: Header<DataRecord, unknown>;
+    header: Header<TValue, unknown>;
 }) => {
     if (header.column.getCanResize() === false) return <></>;
 
