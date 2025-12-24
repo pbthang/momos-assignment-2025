@@ -1,205 +1,211 @@
 import {
-    type ColumnDef,
-    type ColumnSizingState,
-    flexRender,
-    getCoreRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    type SortingState,
-    useReactTable,
+  type ColumnDef,
+  type ColumnSizingState,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
 } from "@tanstack/react-table";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Button } from "../ui/button";
 import { useCallback, useState } from "react";
 import {
-    arrayMove,
-    horizontalListSortingStrategy,
-    SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  SortableContext,
 } from "@dnd-kit/sortable";
 import {
-    closestCenter,
-    DndContext,
-    KeyboardSensor,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
-    type DragEndEvent,
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
 } from "@dnd-kit/core";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import DraggableTableHeader from "./draggable-table-header";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Filter from "../filter/filter";
+import type { FilterType } from "@/types/filter-types";
+import { mockFilter } from "./mock-data";
 
 export function DataTable<TValue>({
-    columns,
-    data,
+  columns,
+  data,
 }: {
-    columns: ColumnDef<TValue>[];
-    data: TValue[];
+  columns: ColumnDef<TValue>[];
+  data: TValue[];
 }) {
-    const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnOrder, setColumnOrder] = useState<string[]>(() =>
-        columns.map((col) => col.id as string)
-    );
-    const [colSizing, setColSizing] = useState<ColumnSizingState>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnOrder, setColumnOrder] = useState<string[]>(() =>
+    columns.map((col) => col.id as string)
+  );
+  const [colSizing, setColSizing] = useState<ColumnSizingState>({});
+  const [filter, setFilter] = useState<FilterType>(mockFilter);
 
-    const table = useReactTable({
-        data,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        onSortingChange: setSorting,
-        getSortedRowModel: getSortedRowModel(),
-        onColumnOrderChange: setColumnOrder,
-        enableColumnResizing: true,
-        columnResizeMode: "onChange",
-        onColumnSizingChange: setColSizing,
-        defaultColumn: {
-            size: 150,
-            // minSize: 50,
-            // maxSize: 300,
-        },
-        state: {
-            sorting,
-            columnOrder,
-            columnSizing: colSizing,
-        },
-        // debugTable: true,
-        // debugHeaders: true,
-        // debugColumns: true,
-    });
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnOrderChange: setColumnOrder,
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
+    onColumnSizingChange: setColSizing,
+    state: {
+      sorting,
+      columnOrder,
+      columnSizing: colSizing,
+    },
+    defaultColumn: {
+      size: 200,
+    },
+    // debugTable: true,
+    // debugHeaders: true,
+    // debugColumns: true,
+  });
 
-    const handleDragEnd = useCallback((event: DragEndEvent) => {
-        const { active, over } = event;
-        if (active && over && active.id !== over.id) {
-            setColumnOrder((columnOrder) => {
-                const oldIndex = columnOrder.indexOf(active.id as string);
-                const newIndex = columnOrder.indexOf(over.id as string);
-                return arrayMove(columnOrder, oldIndex, newIndex);
-            });
-        }
-    }, []);
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      setColumnOrder((columnOrder) => {
+        const oldIndex = columnOrder.indexOf(active.id as string);
+        const newIndex = columnOrder.indexOf(over.id as string);
+        return arrayMove(columnOrder, oldIndex, newIndex);
+      });
+    }
+  }, []);
 
-    const sensors = useSensors(
-        useSensor(MouseSensor, {}),
-        useSensor(TouchSensor, {}),
-        useSensor(KeyboardSensor, {})
-    );
+  const sensors = useSensors(
+    useSensor(MouseSensor, {}),
+    useSensor(TouchSensor, {}),
+    useSensor(KeyboardSensor, {})
+  );
 
-    return (
-        <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToHorizontalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
+  return (
+    <DndContext
+      collisionDetection={closestCenter}
+      modifiers={[restrictToHorizontalAxis]}
+      onDragEnd={handleDragEnd}
+      sensors={sensors}
+    >
+      <div className="my-2">
+        <Filter value={filter} onChange={setFilter} />
+      </div>
+      <div className="flex items-center gap-2 py-4">
+        <Button variant="outline" onClick={() => table.resetSorting()}>
+          Clear Sorting
+        </Button>
+        <Button variant="outline" onClick={() => table.resetColumnOrder()}>
+          Reset Column Order
+        </Button>
+        <Button variant="outline" onClick={() => table.resetColumnSizing()}>
+          Reset Column Sizing
+        </Button>
+      </div>
+      <div className="flex items-center space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
         >
-            <div className="flex items-center gap-2 py-4">
-                <Button variant="outline" onClick={() => table.resetSorting()}>
-                    Clear Sorting
-                </Button>
-                <Button
-                    variant="outline"
-                    onClick={() => table.resetColumnOrder()}
+          <ChevronLeft /> <span>Previous</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          <span>Next</span> <ChevronRight />
+        </Button>
+        <div className="text-xs text-muted-foreground">
+          {table.getPageCount() > 1 && (
+            <span>
+              {table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                1}
+              &ndash;
+              {table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                table.getState().pagination.pageSize}{" "}
+              of {table.getRowCount()} results
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="overflow-hidden border">
+        <Table
+          style={{
+            width: table.getTotalSize(),
+          }}
+        >
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                <SortableContext
+                  items={columnOrder}
+                  strategy={horizontalListSortingStrategy}
                 >
-                    Reset Column Order
-                </Button>
-                <Button
-                    variant="outline"
-                    onClick={() => table.resetColumnSizing()}
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <DraggableTableHeader key={header.id} header={header} />
+                    );
+                  })}
+                </SortableContext>
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
                 >
-                    Reset Column Sizing
-                </Button>
-            </div>
-            <div className="flex items-center space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className="px-4"
+                      style={{
+                        width: cell.column.getSize() - 20,
+                        minWidth: cell.column.columnDef.minSize,
+                      }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
                 >
-                    <ChevronLeft /> <span>Previous</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    <span>Next</span> <ChevronRight />
-                </Button>
-            </div>
-            <div className="overflow-hidden border">
-                <Table
-                    style={{
-                        width: table.getTotalSize(),
-                    }}
-                >
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                <SortableContext
-                                    items={columnOrder}
-                                    strategy={horizontalListSortingStrategy}
-                                >
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <DraggableTableHeader
-                                                key={header.id}
-                                                header={header}
-                                            />
-                                        );
-                                    })}
-                                </SortableContext>
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={
-                                        row.getIsSelected() && "selected"
-                                    }
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            // className="px-4"
-                                            style={{
-                                                width: cell.column.getSize(),
-                                                minWidth:
-                                                    cell.column.columnDef
-                                                        .minSize,
-                                            }}
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
-                                >
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-        </DndContext>
-    );
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </DndContext>
+  );
 }
