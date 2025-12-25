@@ -1,8 +1,10 @@
+import { useState } from "react";
 import type { FilterType } from "@/types/filter-types";
 import { NestedFilter } from "./nested-filter";
 import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { createDefaultFilterItem } from "./filter-utils";
+import { useFilterStore } from "@/stores/filter-store";
 
 export default function Filter<T extends Record<string, unknown>>({
   columnDefs,
@@ -17,17 +19,24 @@ export default function Filter<T extends Record<string, unknown>>({
   onApply: (value?: FilterType<T>) => void;
   data?: T[];
 }) {
-  const handleApply = () => {
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const resetFilter = useFilterStore((state) => state.resetFilter);
+
+  const handleApply = (e: React.FormEvent) => {
+    e.preventDefault();
     onApply(value);
   };
 
   const handleReset = () => {
-    onChange(createDefaultFilterItem<T>());
+    const defaultFilter = createDefaultFilterItem<T>();
+    onChange(defaultFilter);
     onApply();
+    setValidationErrors([]);
+    resetFilter();
   };
 
   return (
-    <div className="space-y-2">
+    <form onSubmit={handleApply} className="space-y-2">
       <div>
         <h2 className="text-sm font-semibold mb-2">Filter Configuration</h2>
         <NestedFilter
@@ -37,14 +46,26 @@ export default function Filter<T extends Record<string, unknown>>({
           data={data}
         />
       </div>
+      {validationErrors.length > 0 && (
+        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-2">
+          <p className="text-xs font-semibold text-destructive mb-1">
+            Validation Errors:
+          </p>
+          <ul className="text-xs text-destructive list-disc list-inside space-y-0.5">
+            {validationErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex gap-2 pt-2">
-        <Button onClick={handleReset} variant="outline">
+        <Button type="button" onClick={handleReset} variant="outline">
           Reset Filter
         </Button>
-        <Button onClick={handleApply} variant="default">
+        <Button type="submit" variant="default">
           Apply Filter
         </Button>
       </div>
-    </div>
+    </form>
   );
 }

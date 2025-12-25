@@ -213,6 +213,7 @@ export function FilterItem<T extends Record<string, unknown>>({
         <Checkbox
           checked={filter.value as boolean}
           onCheckedChange={(checked) => handleValueChange(checked === true)}
+          required
         />
       );
     }
@@ -247,36 +248,44 @@ export function FilterItem<T extends Record<string, unknown>>({
     if (propertyType === "array" && filter.property === "multiSelect" && data) {
       const selectedValues = (filter.value as string[]) || [];
       return (
-        <MultiSelect
-          values={selectedValues}
-          onValuesChange={(values) => handleValueChange(values)}
-        >
-          <MultiSelectTrigger className="h-6 min-w-40 text-xs max-w-sm">
-            <MultiSelectValue
-              placeholder="Select options..."
-              overflowBehavior="cutoff"
-            />
-          </MultiSelectTrigger>
-          <MultiSelectContent search={false}>
-            {multiSelectOptions.length > 0 ? (
-              multiSelectOptions.map((option) => (
-                <MultiSelectItem
-                  key={option.name}
-                  value={option.name}
-                  badgeLabel={
+        <div className="relative">
+          <input
+            type="hidden"
+            value={selectedValues.join(",")}
+            required
+            aria-required="true"
+          />
+          <MultiSelect
+            values={selectedValues}
+            onValuesChange={(values) => handleValueChange(values)}
+          >
+            <MultiSelectTrigger className="h-6 min-w-40 text-xs max-w-sm">
+              <MultiSelectValue
+                placeholder="Select options..."
+                overflowBehavior="cutoff"
+              />
+            </MultiSelectTrigger>
+            <MultiSelectContent search={false}>
+              {multiSelectOptions.length > 0 ? (
+                multiSelectOptions.map((option) => (
+                  <MultiSelectItem
+                    key={option.name}
+                    value={option.name}
+                    badgeLabel={
+                      <ColorBadge color={option.color} label={option.name} />
+                    }
+                  >
                     <ColorBadge color={option.color} label={option.name} />
-                  }
-                >
-                  <ColorBadge color={option.color} label={option.name} />
-                </MultiSelectItem>
-              ))
-            ) : (
-              <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                No options available
-              </div>
-            )}
-          </MultiSelectContent>
-        </MultiSelect>
+                  </MultiSelectItem>
+                ))
+              ) : (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  No options available
+                </div>
+              )}
+            </MultiSelectContent>
+          </MultiSelect>
+        </div>
       );
     }
     // Handle select and status properties with badge display
