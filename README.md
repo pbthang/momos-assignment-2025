@@ -1,73 +1,147 @@
-# React + TypeScript + Vite
+# Notion Integrated Data Table
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based data table application that integrates with Notion API, featuring advanced filtering, sorting, column management, and persistent state management.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Data Table**: Interactive table with drag-and-drop column reordering, column resizing, sorting, and pagination.
+- **Advanced Filtering**: Complex nested filters with AND/OR operators
+- **State Persistence**: Filter, sorting, and column preferences saved to localStorage
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 18+ and npm
+- Docker and Docker Compose (for running the server)
+- Notion API credentials:
+  - Notion Database ID
+  - Notion Integration Secret
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Clone the Repository
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/pbthang/momos-assignment-2025.git
+cd momos-assignment-2025
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Environment Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the project root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+VITE_BACKEND_URL=http://localhost:8000
+
+# Notion API Configuration
+NOTION_DATABASE_ID=your_notion_database_id_here
+NOTION_DATABASE_SECRET=your_notion_secret_here
+
+# Server Port (optional, defaults to 8000)
+PORT=8000
 ```
+
+### 3. Running the Server
+
+#### Option A: Using Docker Compose (Recommended)
+
+```bash
+# Start the server
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the server
+docker-compose down
+```
+
+The server will be available at `http://localhost:8000`
+
+#### Option B: Manual Setup
+
+```bash
+# Navigate to server directory
+cd server
+
+# Install dependencies
+npm install
+
+# Or build and run in production mode
+npm start
+```
+
+### 4. Running the Frontend
+
+```bash
+# Install dependencies (if not already installed)
+npm install
+
+# Start the development server
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173` (or the port shown in the terminal)
+
+## Project Structure
+
+```text
+momos-assignment-2025/
+├── server/                 # Backend server (Express + Notion API)
+│   ├── src/
+│   │   └── server.ts      # Server entry point
+│   ├── Dockerfile         # Docker configuration
+│   └── package.json
+├── src/                    # Frontend React application
+│   ├── components/         # React components
+│   │   ├── data-table/    # Table components
+│   │   ├── filter/        # Filter components
+│   │   └── ui/            # UI components (shadcn/ui)
+│   ├── stores/            # Zustand stores
+│   │   ├── filter-store.ts
+│   │   └── table-store.ts
+│   ├── utils/             # Utility functions
+│   └── types/             # TypeScript types
+├── docker-compose.yml     # Docker Compose configuration
+└── package.json
+```
+
+## Available Scripts
+
+### Frontend
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm test` - Run tests
+- `npm run test:ui` - Run tests with UI
+
+### Server
+
+- `npm run dev` - Start development server with hot reload
+- `npm start` - Build and start production server
+
+## Features Overview
+
+## Development
+
+### Tech Stack
+
+**Frontend:**
+
+- React 19
+- TypeScript
+- Vite
+- TanStack Table
+- TanStack Query
+- Zustand (state management)
+- shadcn/ui components
+- Tailwind CSS
+- dnd-kit (drag and drop)
+
+**Backend:**
+
+- Node.js
+- Express
+- Notion API Client
+- TypeScript

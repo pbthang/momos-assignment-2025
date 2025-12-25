@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: notion-server
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - NOTION_DATABASE_ID=${NOTION_DATABASE_ID}
+      - NOTION_DATABASE_SECRET=${NOTION_DATABASE_SECRET}
+    env_file:
+      - .env
+    restart: unless-stopped
+

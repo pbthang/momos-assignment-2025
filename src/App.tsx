@@ -25,6 +25,27 @@ export function App() {
   return (
     <main className="bg-background px-4 py-4">
       <h1 className="text-3xl font-bold">Notion Integrated Table</h1>
+      <p className="text-sm text-muted-foreground mt-2">
+        Momos Assignment 2025 - By{" "}
+        <a
+          href="https://pbthang.netlify.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 underline"
+        >
+          Pham Ba Thang
+        </a>
+      </p>
+      <p className="text-sm text-muted-foreground mb-4">
+        <a
+          href="https://github.com/pbthang/momos-assignment-2025"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 underline"
+        >
+          GitHub Repo
+        </a>
+      </p>
       {isLoading && <p>Loading data...</p>}
       {error && <p>Error loading data: {(error as Error).message}</p>}
       {data && <DataTable columns={columns} data={tableData} />}
