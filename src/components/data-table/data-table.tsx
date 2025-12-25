@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "../ui/button";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 import {
   arrayMove,
   horizontalListSortingStrategy,
@@ -37,24 +37,37 @@ import DraggableTableHeader from "./draggable-table-header";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Filter from "../filter/filter";
 import type { FilterType } from "@/types/filter-types";
-import { mockFilter } from "./mock-data";
+import { createDefaultFilterItem } from "../filter/filter-utils";
+import { filterData } from "@/utils/filter";
 
-export function DataTable<TValue>({
+export function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
 }: {
-  columns: ColumnDef<TValue>[];
-  data: TValue[];
+  columns: ColumnDef<T>[];
+  data: T[];
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnOrder, setColumnOrder] = useState<string[]>(() =>
     columns.map((col) => col.id as string)
   );
   const [colSizing, setColSizing] = useState<ColumnSizingState>({});
-  const [filter, setFilter] = useState<FilterType>(mockFilter);
+  const [filter, setFilter] = useState<FilterType<T>>(
+    createDefaultFilterItem<T>()
+  );
+  const [appliedFilter, setAppliedFilter] = useState<FilterType<T> | null>(
+    null
+  );
+
+  const filteredData = useMemo(() => {
+    if (appliedFilter) {
+      return filterData(data, appliedFilter);
+    }
+    return data;
+  }, [data, appliedFilter]);
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -102,7 +115,17 @@ export function DataTable<TValue>({
       sensors={sensors}
     >
       <div className="my-2">
-        <Filter value={filter} onChange={setFilter} />
+        <Filter
+          columnDefs={columns}
+          value={filter}
+          onChange={(value) => {
+            setFilter(value || createDefaultFilterItem<T>());
+          }}
+          onApply={(appliedFilter) => {
+            setAppliedFilter(appliedFilter || null);
+          }}
+          data={data}
+        />
       </div>
       <div className="flex items-center gap-2 py-4">
         <Button variant="outline" onClick={() => table.resetSorting()}>

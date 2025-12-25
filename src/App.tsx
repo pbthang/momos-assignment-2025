@@ -24,7 +24,7 @@ export function App() {
 
   return (
     <main className="bg-background px-4 py-4">
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
+      <h1 className="text-3xl font-bold">Notion Integrated Table</h1>
       {isLoading && <p>Loading data...</p>}
       {error && <p>Error loading data: {(error as Error).message}</p>}
       {data && <DataTable columns={columns} data={tableData} />}

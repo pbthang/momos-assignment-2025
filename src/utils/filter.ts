@@ -1,30 +1,29 @@
-import type { DataRecord } from "@/components/data-table/columns";
 import type { FilterItemType, FilterType } from "@/types/filter-types";
 
-export const filterData = (
-  data: DataRecord[],
-  filter: FilterType
-): DataRecord[] => {
+export const filterData = <T extends Record<string, unknown>>(
+  data: T[],
+  filter: FilterType<T>
+): T[] => {
   // base case
   if ("comparator" in filter) {
-    return filterDataByComparator(data, filter as FilterItemType);
+    return filterDataByComparator<T>(data, filter as FilterItemType<T>);
   }
   // recursive case - handle logical operators
   if (filter.operator === "and") {
     let result = [...data];
-    for (const f of filter.filters as FilterType[]) {
+    for (const f of filter.filters as FilterType<T>[]) {
       result = filterData(result, f);
     }
     return result;
   }
   if (filter.operator === "or") {
-    const result: DataRecord[] = [];
+    const result: T[] = [];
     const seen = new Set<string>();
 
-    for (const f of filter.filters as FilterType[]) {
+    for (const f of filter.filters as FilterType<T>[]) {
       const filtered = filterData(data, f);
       for (const item of filtered) {
-        const key = item.id;
+        const key = JSON.stringify(item);
         if (!seen.has(key)) {
           seen.add(key);
           result.push(item);
@@ -36,22 +35,38 @@ export const filterData = (
   return [];
 };
 
-export const filterDataByComparator = (
-  data: DataRecord[],
-  comparator: FilterItemType
-): DataRecord[] => {
+export const filterDataByComparator = <T extends Record<string, unknown>>(
+  data: T[],
+  comparator: FilterItemType<T>
+): T[] => {
   switch (comparator.comparator) {
     case "equals":
       return filterEquals(data, comparator.property, comparator.value);
     case "not_equals":
       return filterNotEquals(data, comparator.property, comparator.value);
     case "contains":
+      // Handle multi-select: if value is an array, check if item contains any of the values
+      if (Array.isArray(comparator.value)) {
+        return filterContainsMultiSelect(
+          data,
+          comparator.property,
+          comparator.value as string[]
+        );
+      }
       return filterContains(
         data,
         comparator.property,
         comparator.value as string
       );
     case "not_contains":
+      // Handle multi-select: if value is an array, check if item does not contain any of the values
+      if (Array.isArray(comparator.value)) {
+        return filterDoesNotContainMultiSelect(
+          data,
+          comparator.property,
+          comparator.value as string[]
+        );
+      }
       return filterDoesNotContain(
         data,
         comparator.property,
@@ -106,10 +121,7 @@ export const filterDataByComparator = (
   }
 };
 
-export const filterIsEmpty = (
-  data: DataRecord[],
-  property: keyof DataRecord
-): DataRecord[] => {
+export const filterIsEmpty = <T>(data: T[], property: keyof T): T[] => {
   return data.filter(
     (item) =>
       item[property] === null ||
@@ -119,10 +131,7 @@ export const filterIsEmpty = (
   );
 };
 
-export const filterIsNotEmpty = (
-  data: DataRecord[],
-  property: keyof DataRecord
-): DataRecord[] => {
+export const filterIsNotEmpty = <T>(data: T[], property: keyof T): T[] => {
   return data.filter(
     (item) =>
       item[property] !== null &&
@@ -132,11 +141,11 @@ export const filterIsNotEmpty = (
   );
 };
 
-export const filterEquals = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterEquals = <T>(
+  data: T[],
+  property: keyof T,
   value: unknown
-): DataRecord[] => {
+): T[] => {
   return data.filter((item) => {
     const itemValue = item[property];
     // Handle SelectOption objects: compare name property when value is a string
@@ -152,11 +161,11 @@ export const filterEquals = (
   });
 };
 
-export const filterNotEquals = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterNotEquals = <T>(
+  data: T[],
+  property: keyof T,
   value: unknown
-): DataRecord[] => {
+): T[] => {
   return data.filter((item) => {
     const itemValue = item[property];
     // Handle SelectOption objects: compare name property when value is a string
@@ -172,51 +181,51 @@ export const filterNotEquals = (
   });
 };
 
-export const filterGreaterThan = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterGreaterThan = <T>(
+  data: T[],
+  property: keyof T,
   value: number
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) => typeof item[property] === "number" && item[property] > value
   );
 };
 
-export const filterLessThan = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterLessThan = <T>(
+  data: T[],
+  property: keyof T,
   value: number
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) => typeof item[property] === "number" && item[property] < value
   );
 };
 
-export const filterGreaterThanOrEqualTo = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterGreaterThanOrEqualTo = <T>(
+  data: T[],
+  property: keyof T,
   value: number
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) => typeof item[property] === "number" && item[property] >= value
   );
 };
 
-export const filterLessThanOrEqualTo = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterLessThanOrEqualTo = <T>(
+  data: T[],
+  property: keyof T,
   value: number
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) => typeof item[property] === "number" && item[property] <= value
   );
 };
 
-export const filterBefore = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterBefore = <T>(
+  data: T[],
+  property: keyof T,
   value: Date
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) =>
       item[property] instanceof Date &&
@@ -224,11 +233,11 @@ export const filterBefore = (
   );
 };
 
-export const filterAfter = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterAfter = <T>(
+  data: T[],
+  property: keyof T,
   value: Date
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) =>
       item[property] instanceof Date &&
@@ -236,11 +245,11 @@ export const filterAfter = (
   );
 };
 
-export const filterOnOrBefore = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterOnOrBefore = <T>(
+  data: T[],
+  property: keyof T,
   value: Date
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) =>
       item[property] instanceof Date &&
@@ -248,11 +257,11 @@ export const filterOnOrBefore = (
   );
 };
 
-export const filterOnOrAfter = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterOnOrAfter = <T>(
+  data: T[],
+  property: keyof T,
   value: Date
-): DataRecord[] => {
+): T[] => {
   return data.filter(
     (item) =>
       item[property] instanceof Date &&
@@ -260,11 +269,11 @@ export const filterOnOrAfter = (
   );
 };
 
-export const filterContains = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterContains = <T>(
+  data: T[],
+  property: keyof T,
   value: string
-): DataRecord[] => {
+): T[] => {
   return data.filter((item) => {
     const itemValue = item[property];
     if (typeof itemValue === "string") return itemValue.includes(value);
@@ -280,11 +289,11 @@ export const filterContains = (
   });
 };
 
-export const filterDoesNotContain = (
-  data: DataRecord[],
-  property: keyof DataRecord,
+export const filterDoesNotContain = <T>(
+  data: T[],
+  property: keyof T,
   value: string
-): DataRecord[] => {
+): T[] => {
   return data.filter((item) => {
     const itemValue = item[property];
     if (typeof itemValue === "string") return !itemValue.includes(value);
@@ -295,6 +304,54 @@ export const filterDoesNotContain = (
           "name" in arrItem &&
           arrItem.name === value
       );
+    return true;
+  });
+};
+
+// Filter function for multi-select contains (value is an array of strings)
+export const filterContainsMultiSelect = <T>(
+  data: T[],
+  property: keyof T,
+  values: string[]
+): T[] => {
+  if (values.length === 0) return data;
+  return data.filter((item) => {
+    const itemValue = item[property];
+    if (Array.isArray(itemValue)) {
+      // Check if item's multiSelect array contains ALL of the selected values
+      return values.every((value) =>
+        itemValue.some(
+          (arrItem) =>
+            typeof arrItem === "object" &&
+            "name" in arrItem &&
+            arrItem.name === value
+        )
+      );
+    }
+    return false;
+  });
+};
+
+// Filter function for multi-select not_contains (value is an array of strings)
+export const filterDoesNotContainMultiSelect = <T>(
+  data: T[],
+  property: keyof T,
+  values: string[]
+): T[] => {
+  if (values.length === 0) return data;
+  return data.filter((item) => {
+    const itemValue = item[property];
+    if (Array.isArray(itemValue)) {
+      // Check if item's multiSelect array does NOT contain ANY of the selected values
+      return !values.some((value) =>
+        itemValue.some(
+          (arrItem) =>
+            typeof arrItem === "object" &&
+            "name" in arrItem &&
+            arrItem.name === value
+        )
+      );
+    }
     return true;
   });
 };

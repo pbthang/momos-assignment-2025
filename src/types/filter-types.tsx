@@ -1,5 +1,3 @@
-import type { DataRecord } from "@/components/data-table/columns";
-
 export const CHECKBOX_COMPARATORS = ["equals", "not_equals"] as const;
 export const DATE_COMPARATORS = [
   "equals",
@@ -84,51 +82,52 @@ export type ComparatorType =
   | TimestampComparator
   | NumberComparator;
 
-export type TextFilterItemType = {
+export type TextFilterItemType<T extends Record<string, unknown>> = {
   comparator: RichTextComparator;
-  property: keyof DataRecord;
+  property: keyof T;
   value: string;
 };
 
-export type CheckboxFilterItemType = {
+export type CheckboxFilterItemType<T extends Record<string, unknown>> = {
   comparator: CheckboxComparator;
-  property: keyof DataRecord;
+  property: keyof T;
   value: boolean;
 };
 
-export type DateFilterItemType = {
+export type DateFilterItemType<T extends Record<string, unknown>> = {
   comparator: DateComparator | TimestampComparator;
-  property: keyof DataRecord;
+  property: keyof T;
   value: Date;
 };
 
-export type NumberFilterItemType = {
+export type NumberFilterItemType<T extends Record<string, unknown>> = {
   comparator: NumberComparator;
-  property: keyof DataRecord;
+  property: keyof T;
   value: number;
 };
 
-export type MultiSelectFilterItemType = {
+export type MultiSelectFilterItemType<T extends Record<string, unknown>> = {
   comparator: MultiSelectComparator;
-  property: keyof DataRecord;
+  property: keyof T;
   value: string[];
 };
 
-export type SelectFilterItemType = {
+export type SelectFilterItemType<T extends Record<string, unknown>> = {
   comparator: SelectComparator | StatusComparator;
-  property: keyof DataRecord;
+  property: keyof T;
   value: string;
 };
 
-export type FilterItemType =
-  | TextFilterItemType
-  | CheckboxFilterItemType
-  | DateFilterItemType
-  | NumberFilterItemType
-  | MultiSelectFilterItemType;
+export type FilterItemType<T extends Record<string, unknown>> =
+  | TextFilterItemType<T>
+  | CheckboxFilterItemType<T>
+  | DateFilterItemType<T>
+  | NumberFilterItemType<T>
+  | MultiSelectFilterItemType<T>
+  | SelectFilterItemType<T>;
 
 export type LogicalOperator = "and" | "or";
 
-export type FilterType =
-  | FilterItemType
-  | { operator: LogicalOperator; filters: FilterType[] };
+export type FilterType<T extends Record<string, unknown>> =
+  | FilterItemType<T>
+  | { operator: LogicalOperator; filters: FilterType<T>[] };
